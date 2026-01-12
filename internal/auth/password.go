@@ -1,0 +1,3 @@
+package auth
+
+//Bcrypt hashing
