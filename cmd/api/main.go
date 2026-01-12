@@ -7,7 +7,9 @@ import (
 
 	"github.com/maqsatto/Notes-API/internal/config"
 	"github.com/maqsatto/Notes-API/internal/database"
+	"github.com/maqsatto/Notes-API/internal/migration"
 )
+
 
 func main() {
 	cfg, err := config.Load()
@@ -16,11 +18,18 @@ func main() {
 	}
 
 	ctx := context.Background()
+	//DB Connect
 	db, err := database.NewPostgresDB(ctx, cfg.Database)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer db.Close()
 
-	fmt.Println("Success")
+	// MIGRATE UP
+	if err := migration.MigrateUp(db); err != nil {
+		log.Fatalf("Migration failed: %v", err)
+	}
+
+	fmt.Println("DB connected + migrations applied")
 }
+
