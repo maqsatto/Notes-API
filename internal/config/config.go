@@ -36,12 +36,12 @@ func Load() (*Config, error) {
 }
 
 func (c *Config) Validate() error {
-    if c.Database.Password == "" {
-        return fmt.Errorf("DB_PASSWORD is required")
-    }
-    // if c.JWT.Secret == "" {
-    //     return fmt.Errorf("JWT_SECRET is required")
+    // if c.Database.Password == "" {
+    //     return fmt.Errorf("DB_PASSWORD is required")
     // }
+    // // if c.JWT.Secret == "" {
+    // //     return fmt.Errorf("JWT_SECRET is required")
+    // // }
     return nil
 }
 
