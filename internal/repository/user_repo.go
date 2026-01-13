@@ -159,6 +159,33 @@ func (r *UserRepo) ExistsByUsername(ctx context.Context, username string) (bool,
 	return exists, nil
 }
 
+func (r *UserRepo) List(ctx context.Context, limit, offset int) ([]*domain.User, int64, error) {
+	query := `SELECT id, email, username, created_at, updated_at FROM users
+	WHERE deleted_at IS NULL LIMIT $1 OFFSET $2`
+	countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
+	var total int64
+	if err := r.db.QueryRowContext(ctx, countQuery).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+	rows, err := r.db.QueryContext(ctx, query, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+	users := make([]*domain.User, 0, limit)
+	for rows.Next() {
+		var user domain.User
+		if err := rows.Scan(&user.ID, &user.Email, &user.Username, &user.CreatedAt, &user.UpdatedAt); err != nil {
+			return nil, 0, err
+		}
+		users = append(users, &user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+	return users, total, nil
+}
+
 func (r *UserRepo) Count(ctx context.Context) (uint64, error) {
 	query := `
 		SELECT COUNT(*) FROM users;

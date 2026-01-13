@@ -46,7 +46,7 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (*domain.User, error)
 	GetByUsername(ctx context.Context, username string) (*domain.User, error)
 
-	// List(ctx context.Context, limit, offset int) ([]*domain.User, int64, error)
+	List(ctx context.Context, limit, offset int) ([]*domain.User, int64, error)
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
 	ExistsByUsername(ctx context.Context, username string) (bool, error)
 
