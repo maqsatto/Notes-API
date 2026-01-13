@@ -26,7 +26,7 @@ func (r *UserRepo) Create(ctx context.Context, user *domain.User) error {
 		RETURNING id, created_at, updated_at
 	`
 	if err := r.db.QueryRowContext(ctx, query, user.Email, user.Username, user.Password).
-		Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt);err != nil {
+		Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt); err != nil {
 		return err
 	}
 	return nil
@@ -141,11 +141,10 @@ func (r *UserRepo) GetByUsername(ctx context.Context, username string) (*domain.
 	return &getUser, nil
 }
 
-
 func (r *UserRepo) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE email = $1 and deleted_at IS NULL)`
 	var exists bool
-	if err := r.db.QueryRowContext(ctx, query, email).Scan(&exists) ;err != nil {
+	if err := r.db.QueryRowContext(ctx, query, email).Scan(&exists); err != nil {
 		return false, err
 	}
 	return exists, nil
@@ -154,7 +153,7 @@ func (r *UserRepo) ExistsByEmail(ctx context.Context, email string) (bool, error
 func (r *UserRepo) ExistsByUsername(ctx context.Context, username string) (bool, error) {
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1 and deleted_at IS NULL)`
 	var exists bool
-	if err := r.db.QueryRowContext(ctx, query, username).Scan(&exists) ;err != nil {
+	if err := r.db.QueryRowContext(ctx, query, username).Scan(&exists); err != nil {
 		return false, err
 	}
 	return exists, nil
