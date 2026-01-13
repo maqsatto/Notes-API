@@ -1,0 +1,2 @@
+[INFO] 2026/01/13 09:46:16 logger.go:39: server started on localhost:8080
+[INFO] 2026/01/13 09:46:35 logger.go:39: request method=GETpath=/api/healthstatus=200bytes=16dur=36.666µs

@@ -10,6 +10,7 @@ import (
 
 	"github.com/maqsatto/Notes-API/internal/config"
 	"github.com/maqsatto/Notes-API/internal/database"
+	"github.com/maqsatto/Notes-API/internal/http/router"
 	"github.com/maqsatto/Notes-API/internal/logger"
 )
 
@@ -40,10 +41,14 @@ func main() {
 
 	// build Server
 	addr := fmt.Sprintf("%s:%s", cfg.Server.Host, cfg.Server.Port)
-
+	h := router.New(router.Deps{
+		Config: cfg,
+		Logger: logg,
+		DB: db,
+	})
 	srv := &http.Server{
 		Addr:         addr,
-		Handler:      &http.ServeMux{},
+		Handler:      h,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,

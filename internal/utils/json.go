@@ -9,7 +9,7 @@ import (
 
 func WriteJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(v); err != nil {
 		WriteJSON(w, 400, "Bad json")
 		return
