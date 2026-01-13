@@ -9,8 +9,17 @@ import (
 )
 
 type Config struct {
+	Server ServerConfig
 	Database DatabaseConfig
+	JWT JWTConfig
 }
+
+type ServerConfig struct {
+	Host string
+	Port string
+	Env string
+}
+
 type DatabaseConfig struct {
     Host     string
     Port     string
@@ -20,11 +29,21 @@ type DatabaseConfig struct {
     SSLMode  string
 }
 
+type JWTConfig struct {
+	Secret string
+	ExpiryHour int
+}
+
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 	_ = godotenv.Load("../.env")
 	_ = godotenv.Load("../../.env")
 	cfg := &Config{
+		Server: ServerConfig{
+			Host: getEnv("SERVER_HOST", "localhost"),
+			Port: getEnv("SERVER_PORT", "8080"),
+			Env: getEnv("APP_ENV", "dev"),
+		},
 		Database: DatabaseConfig{
 			Host: getEnv("DB_HOST", "localhost"),
 			Port: getEnv("DB_PORT", "5432"),
@@ -32,6 +51,10 @@ func Load() (*Config, error) {
 			Password: getEnv("DB_PASSWORD", ""),
 			DBName: getEnv("DB_NAME", ""),
 			SSLMode: getEnv("DB_SSLMODE", "disable"),
+		},
+		JWT: JWTConfig{
+			Secret: getEnv("JWT_SECRET", ""),
+			ExpiryHour: getEnvAsInt("JWT_EXPIRY_HOUR", 24),
 		},
 	}
 	if err := cfg.Validate(); err != nil {
@@ -41,12 +64,12 @@ func Load() (*Config, error) {
 }
 
 func (c *Config) Validate() error {
-    // if c.Database.Password == "" {
-    //     return fmt.Errorf("DB_PASSWORD is required")
-    // }
-    // // if c.JWT.Secret == "" {
-    // //     return fmt.Errorf("JWT_SECRET is required")
-    // // }
+    if c.Database.Password == "" {
+        return fmt.Errorf("DB_PASSWORD is required")
+    }
+    if c.JWT.Secret == "" {
+        return fmt.Errorf("JWT_SECRET is required")
+    }
     return nil
 }
 
