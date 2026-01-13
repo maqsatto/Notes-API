@@ -18,21 +18,20 @@ import (
 // 	WithinTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 // }
 
-// type NoteRepository interface {
-// 	Create(ctx context.Context, note *domain.Note) error
-// 	Update(ctx context.Context, note *domain.Note) error
-// 	SoftDelete(ctx context.Context, id uint64) error
-// 	HardDelete(ctx context.Context, id uint64) error
-// 	GetByID(ctx context.Context, id uint64) (*domain.Note, error)
+type NoteRepository interface {
+	Create(ctx context.Context, note *domain.Note) error
+	Update(ctx context.Context, note *domain.Note) error
+	SoftDelete(ctx context.Context, id uint64) error
+	HardDelete(ctx context.Context, id uint64) error
 
-// 	ListByUserID(ctx context.Context, userID uint64, limit, offset int) ([]*domain.Note, int64, error)
-// 	ListByTags(ctx context.Context, userID uint64, tags []string, limit, offset int) ([]*domain.Note, int64, error)
+	GetByID(ctx context.Context, id uint64) (*domain.Note, error)
+	ListByUserID(ctx context.Context, userID uint64, limit, offset int) ([]*domain.Note, int64, error)
+	ListByTags(ctx context.Context, userID uint64, tags []string, limit, offset int) ([]*domain.Note, int64, error)
+	SearchByTitle(ctx context.Context, userID uint64, titleQuery string, limit, offset int) ([]*domain.Note, int64, error)
+	SearchByContent(ctx context.Context, userID uint64, contentQuery string, limit, offset int) ([]*domain.Note, int64, error)
 
-// 	SearchByTitle(ctx context.Context, userID uint64, titleQuery string, limit, offset int) ([]*domain.Note, int64, error)
-
-// 	SearchByContent(ctx context.Context, userID uint64, contentQuery string, limit, offset int) ([]*domain.Note, int64, error)
-// 	CountByUserID(ctx context.Context, userID uint64) (int64, error)
-// }
+	CountByUserID(ctx context.Context, userID uint64) (int64, error)
+}
 
 type UserRepository interface {
 	Create(ctx context.Context, user *domain.User) error
