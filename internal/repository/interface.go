@@ -36,23 +36,22 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, user *domain.User) error
-	// Update(ctx context.Context, user *domain.User) error
-	// UpdatePassword(ctx context.Context, id uint64, hashedPassword string) error
+	Update(ctx context.Context, id uint64, user *domain.User) error
+	UpdatePassword(ctx context.Context, id uint64, hashedPassword string) error
 
-	// SoftDelete(ctx context.Context, id uint64) error
+	SoftDelete(ctx context.Context, id uint64) error
 
-	// HardDelete(ctx context.Context, id uint64) error
-	// GetByID(ctx context.Context, id uint64) (*domain.User, error)
+	HardDelete(ctx context.Context, id uint64) error
+	GetByID(ctx context.Context, id uint64) (*domain.User, error)
 
-	// GetByEmail(ctx context.Context, email string) (*domain.User, error)
-	// GetByUsername(ctx context.Context, username string) (*domain.User, error)
+	GetByEmail(ctx context.Context, email string) (*domain.User, error)
+	GetByUsername(ctx context.Context, username string) (*domain.User, error)
 
 	// List(ctx context.Context, limit, offset int) ([]*domain.User, int64, error)
-	// ExistsByEmail(ctx context.Context, email string) (bool, error)
-	// ExistsByUsername(ctx context.Context, username string) (bool, error)
+	ExistsByEmail(ctx context.Context, email string) (bool, error)
+	ExistsByUsername(ctx context.Context, username string) (bool, error)
 
-	// // Count returns total number of active users
-	// Count(ctx context.Context) (int64, error)
+	Count(ctx context.Context) (uint64, error)
 }
 
 // type TagRepository interface {
