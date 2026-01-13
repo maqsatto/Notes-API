@@ -1,2 +1,23 @@
 [INFO] 2026/01/13 09:46:16 logger.go:39: server started on localhost:8080
 [INFO] 2026/01/13 09:46:35 logger.go:39: request method=GETpath=/api/healthstatus=200bytes=16dur=36.666µs
+[INFO] 2026/01/13 17:29:19 logger.go:39: server started on localhost:8080
+[ERROR] 2026/01/13 17:29:19 logger.go:43: server error: listen tcp 127.0.0.1:8080: bind: address already in use
+[INFO] 2026/01/13 17:29:19 logger.go:39: shutdown signal received
+[INFO] 2026/01/13 17:29:19 logger.go:39: server exited
+[INFO] 2026/01/13 17:29:22 logger.go:39: server started on localhost:8080
+[ERROR] 2026/01/13 17:29:22 logger.go:43: server error: listen tcp 127.0.0.1:8080: bind: address already in use
+[INFO] 2026/01/13 17:29:22 logger.go:39: shutdown signal received
+[INFO] 2026/01/13 17:29:22 logger.go:39: server exited
+[INFO] 2026/01/13 17:29:23 logger.go:39: server started on localhost:8080
+[ERROR] 2026/01/13 17:29:23 logger.go:43: server error: listen tcp 127.0.0.1:8080: bind: address already in use
+[INFO] 2026/01/13 17:29:23 logger.go:39: shutdown signal received
+[INFO] 2026/01/13 17:29:23 logger.go:39: server exited
+[INFO] 2026/01/13 17:31:03 logger.go:39: server started on localhost:8081
+[INFO] 2026/01/13 17:31:09 logger.go:39: request method=GETpath=/api/healthstatus=200bytes=16dur=2.455954ms
+[INFO] 2026/01/13 17:31:17 logger.go:39: request method=GETpath=/api/healthstatus=200bytes=16dur=48.26µs
+[INFO] 2026/01/13 17:31:26 logger.go:39: request method=GETpath=/api/healthstatus=200bytes=16dur=1.147555ms
+[INFO] 2026/01/13 17:32:28 logger.go:39: request method=POSTpath=/api/usersstatus=201bytes=153dur=47.366219ms
+[INFO] 2026/01/13 17:46:25 logger.go:39: shutdown signal received
+[INFO] 2026/01/13 17:46:25 logger.go:39: server exited
+[INFO] 2026/01/13 17:46:27 logger.go:39: shutdown signal received
+[INFO] 2026/01/13 17:46:27 logger.go:39: server exited

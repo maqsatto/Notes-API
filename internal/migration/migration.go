@@ -16,43 +16,89 @@ type Migration struct {
 var migrations = []Migration{
 	{
 		Version: 1,
-		Name: "create_users_table",
+		Name:    "create_users_table",
 		Up: `
 			CREATE TABLE IF NOT EXISTS users (
 				id BIGSERIAL PRIMARY KEY,
-				email VARCHAR(255) NOT NULL UNIQUE,
-				username VARCHAR(255) NOT NULL UNIQUE,
-				created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				deleted_at TIMESTAMP
+				email VARCHAR(255) NOT NULL,
+				username VARCHAR(255) NOT NULL,
+				password TEXT NOT NULL,
+				created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+				updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+				deleted_at TIMESTAMPTZ
 			);
+
+			CREATE UNIQUE INDEX IF NOT EXISTS uq_users_email_active
+				ON users(email) WHERE deleted_at IS NULL;
+
+			CREATE UNIQUE INDEX IF NOT EXISTS uq_users_username_active
+				ON users(username) WHERE deleted_at IS NULL;
+
 			CREATE INDEX IF NOT EXISTS idx_users_deleted_at ON users(deleted_at);
+
+			CREATE OR REPLACE FUNCTION set_updated_at()
+			RETURNS TRIGGER AS $$
+			BEGIN
+				NEW.updated_at = now();
+				RETURN NEW;
+			END;
+			$$ LANGUAGE plpgsql;
+
+			DROP TRIGGER IF EXISTS trg_users_set_updated_at ON users;
+			CREATE TRIGGER trg_users_set_updated_at
+				BEFORE UPDATE ON users
+				FOR EACH ROW
+				EXECUTE FUNCTION set_updated_at();
 		`,
 		Down: `
+			DROP TRIGGER IF EXISTS trg_users_set_updated_at ON users;
+			DROP FUNCTION IF EXISTS set_updated_at;
+
+			DROP INDEX IF EXISTS idx_users_deleted_at;
+			DROP INDEX IF EXISTS uq_users_email_active;
+			DROP INDEX IF EXISTS uq_users_username_active;
+
 			DROP TABLE IF EXISTS users CASCADE;
 		`,
 	},
 	{
-			Version: 2,
-			Name: "create_notes_table",
-			Up: `
-	CREATE TABLE IF NOT EXISTS notes (
-			id BIGSERIAL PRIMARY KEY,
-			user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-			title VARCHAR(255) NOT NULL,
-			content TEXT NOT NULL,
-			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-			deleted_at TIMESTAMP
-	);
+		Version: 2,
+		Name:    "create_notes_table",
+		Up: `
+			CREATE TABLE IF NOT EXISTS notes (
+				id BIGSERIAL PRIMARY KEY,
+				user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				title VARCHAR(255) NOT NULL,
+				content TEXT NOT NULL,
+				created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+				updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+				deleted_at TIMESTAMPTZ
+			);
 
-	CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
-	CREATE INDEX IF NOT EXISTS idx_notes_created_at ON notes(created_at DESC);
-	CREATE INDEX IF NOT EXISTS idx_notes_deleted_at ON notes(deleted_at);
-	`,
-			Down: `
-	DROP TABLE IF EXISTS notes CASCADE;
-	`,
+			CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
+			CREATE INDEX IF NOT EXISTS idx_notes_created_at ON notes(created_at DESC);
+			CREATE INDEX IF NOT EXISTS idx_notes_deleted_at ON notes(deleted_at);
+
+			CREATE INDEX IF NOT EXISTS idx_notes_user_created_active
+				ON notes(user_id, created_at DESC)
+				WHERE deleted_at IS NULL;
+
+			DROP TRIGGER IF EXISTS trg_notes_set_updated_at ON notes;
+			CREATE TRIGGER trg_notes_set_updated_at
+				BEFORE UPDATE ON notes
+				FOR EACH ROW
+				EXECUTE FUNCTION set_updated_at();
+		`,
+		Down: `
+			DROP TRIGGER IF EXISTS trg_notes_set_updated_at ON notes;
+
+			DROP INDEX IF EXISTS idx_notes_user_created_active;
+			DROP INDEX IF EXISTS idx_notes_user_id;
+			DROP INDEX IF EXISTS idx_notes_created_at;
+			DROP INDEX IF EXISTS idx_notes_deleted_at;
+
+			DROP TABLE IF EXISTS notes CASCADE;
+		`,
 	},
 	{
 		Version: 3,
@@ -61,7 +107,7 @@ var migrations = []Migration{
 			CREATE TABLE IF NOT EXISTS tags (
 				id BIGSERIAL PRIMARY KEY,
 				name VARCHAR(100) NOT NULL UNIQUE,
-				created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+				created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 			);
 
 			CREATE TABLE IF NOT EXISTS note_tags (
@@ -70,15 +116,21 @@ var migrations = []Migration{
 				PRIMARY KEY (note_id, tag_id)
 			);
 
-		CREATE INDEX IF NOT EXISTS idx_note_tags_note_id ON note_tags(note_id);
-		CREATE INDEX IF NOT EXISTS idx_note_tags_tag_id ON note_tags(tag_id);
+			CREATE INDEX IF NOT EXISTS idx_note_tags_note_id ON note_tags(note_id);
+			CREATE INDEX IF NOT EXISTS idx_note_tags_tag_id ON note_tags(tag_id);
+			CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name);
 		`,
 		Down: `
+			DROP INDEX IF EXISTS idx_tags_name;
+			DROP INDEX IF EXISTS idx_note_tags_note_id;
+			DROP INDEX IF EXISTS idx_note_tags_tag_id;
+
 			DROP TABLE IF EXISTS note_tags;
 			DROP TABLE IF EXISTS tags CASCADE;
 		`,
 	},
 }
+
 
 func createMigrationsTable(db *sql.DB) error {
 	query := `
