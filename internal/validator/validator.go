@@ -1,23 +1,12 @@
 package validator
 
 import (
-	"errors"
 	"net/mail"
 	"regexp"
 	"strings"
 	"unicode"
-)
 
-var (
-	ErrInvalidEmailAddress = errors.New("invalid email address")
-	ErrInvalidPassword     = errors.New("invalid password")
-	ErrEmptyValue          = errors.New("value is empty")
-	ErrInvalidUsername     = errors.New("invalid username")
-	ErrInvalidNoteTitle    = errors.New("invalid note title")
-	ErrInvalidNoteContent  = errors.New("invalid note content")
-	ErrInvalidID           = errors.New("invalid id")
-	ErrValueTooShort       = errors.New("value is too short")
-	ErrValueTooLong        = errors.New("value is too long")
+	"github.com/maqsatto/Notes-API/internal/domain"
 )
 
 const (
@@ -51,7 +40,7 @@ func ValidateUserLogin(email, password string) error {
 	}
 
 	if _, err := IsEmptyString(password); err != nil {
-		return ErrEmptyValue
+		return domain.ErrInvalidInput
 	}
 
 	return nil
@@ -68,41 +57,41 @@ func IsValidNote(title, content string) error {
 
 	return nil
 }
-func IsValidEmail(email string) (bool, error) {
 
+func IsValidEmail(email string) (bool, error) {
 	if len(email) > 255 {
-		return false, ErrInvalidEmailAddress
+		return false, domain.ErrInvalidEmail
 	}
 
 	if b, err := IsEmptyString(email); err != nil {
-		return b, ErrInvalidEmailAddress
+		return b, domain.ErrInvalidEmail
 	}
 
 	email = strings.TrimSpace(email)
 	addr, err := mail.ParseAddress(email)
 
 	if err != nil || addr == nil || addr.Address != email {
-		return false, ErrInvalidEmailAddress
+		return false, domain.ErrInvalidEmail
 	}
 
 	parts := strings.Split(addr.Address, "@")
 
 	if len(parts) != 2 {
-		return false, ErrInvalidEmailAddress
+		return false, domain.ErrInvalidEmail
 	}
 
-	user, domain := parts[0], parts[1]
+	user, domainPart := parts[0], parts[1]
 
-	if !strings.Contains(domain, ".") {
-		return false, ErrInvalidEmailAddress
+	if !strings.Contains(domainPart, ".") {
+		return false, domain.ErrInvalidEmail
 	}
 
-	if strings.HasPrefix(domain, ".") || strings.HasSuffix(domain, ".") {
-		return false, ErrInvalidEmailAddress
+	if strings.HasPrefix(domainPart, ".") || strings.HasSuffix(domainPart, ".") {
+		return false, domain.ErrInvalidEmail
 	}
 
-	if len(user) < 1 || len(domain) < 3 {
-		return false, ErrInvalidEmailAddress
+	if len(user) < 1 || len(domainPart) < 3 {
+		return false, domain.ErrInvalidEmail
 	}
 
 	return true, nil
@@ -110,19 +99,22 @@ func IsValidEmail(email string) (bool, error) {
 
 func IsEmptyString(value string) (bool, error) {
 	if value == "" || len(strings.TrimSpace(value)) == 0 {
-		return false, ErrEmptyValue
+		return false, domain.ErrInvalidInput
 	}
 	return true, nil
 }
 
 func IsValidPassword(password string) (bool, error) {
-
 	if _, err := IsEmptyString(password); err != nil {
-		return false, ErrInvalidPassword
+		return false, domain.ErrInvalidPassword
 	}
 
-	if len(password) < MinPasswordLength || len(password) > MaxPasswordLength {
-		return false, ErrInvalidPassword
+	if len(password) < MinPasswordLength {
+		return false, domain.ErrPasswordTooShort
+	}
+
+	if len(password) > MaxPasswordLength {
+		return false, domain.ErrPasswordTooLong
 	}
 
 	var (
@@ -143,8 +135,18 @@ func IsValidPassword(password string) (bool, error) {
 			hasSpecialChar = true
 		}
 	}
-	if !hasUppercase || !hasLowercase || !hasDigit || !hasSpecialChar {
-		return false, ErrInvalidPassword
+
+	if !hasUppercase {
+		return false, domain.ErrPasswordMissingUppercase
+	}
+	if !hasLowercase {
+		return false, domain.ErrPasswordMissingLowercase
+	}
+	if !hasDigit {
+		return false, domain.ErrPasswordMissingDigit
+	}
+	if !hasSpecialChar {
+		return false, domain.ErrPasswordMissingSpecial
 	}
 
 	return true, nil
@@ -152,34 +154,34 @@ func IsValidPassword(password string) (bool, error) {
 
 func IsValidUsername(username string) (bool, error) {
 	if _, err := IsEmptyString(username); err != nil {
-		return false, ErrInvalidUsername
+		return false, domain.ErrInvalidUsername
 	}
 	if len(username) < MinUsernameLength || len(username) > MaxUsernameLength {
-		return false, ErrInvalidUsername
+		return false, domain.ErrInvalidUsername
 	}
 	validUsername := regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 	if !validUsername.MatchString(username) {
-		return false, ErrInvalidUsername
+		return false, domain.ErrInvalidUsername
 	}
 	return true, nil
 }
 
 func IsValidTitle(title string) (bool, error) {
 	if _, err := IsEmptyString(title); err != nil {
-		return false, ErrInvalidNoteTitle
+		return false, domain.ErrNoteTitleEmpty
 	}
 	if len(title) > MaxNoteTitleLength {
-		return false, ErrInvalidNoteTitle
+		return false, domain.ErrInvalidNote
 	}
 	return true, nil
 }
 
 func IsValidContent(content string) (bool, error) {
 	if _, err := IsEmptyString(content); err != nil {
-		return false, ErrInvalidNoteTitle
+		return false, domain.ErrNoteContentEmpty
 	}
 	if len(content) > MaxNoteContentLength {
-		return false, ErrInvalidNoteTitle
+		return false, domain.ErrNoteTooLarge
 	}
 	return true, nil
 }
