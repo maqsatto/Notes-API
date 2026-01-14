@@ -14,6 +14,7 @@ import (
 	"github.com/maqsatto/Notes-API/internal/logger"
 )
 
+
 func main() {
 	//config
 	cfg, err := config.Load()
@@ -43,7 +44,7 @@ func main() {
 	h := router.New(router.Deps{
 		Config: cfg,
 		Logger: logg,
-		DB:     db,
+		DB: db,
 	})
 	srv := &http.Server{
 		Addr:         addr,
