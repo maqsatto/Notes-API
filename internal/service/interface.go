@@ -6,7 +6,7 @@ import (
 	"github.com/maqsatto/Notes-API/internal/domain"
 )
 
-type NoteService interface {
+type noteService interface {
 	Create(ctx context.Context, userID uint64, title, content string, tags []string) (*domain.Note, error)
 	Update(ctx context.Context, userID, noteID uint64, title, content string, tags []string) (*domain.Note, error)
 	Delete(ctx context.Context, userID, noteID uint64) error
@@ -21,7 +21,7 @@ type NoteService interface {
 	GetUserNoteCount(ctx context.Context, userID uint64) (int64, error)
 }
 
-type UserService interface {
+type userService interface {
 	Register(ctx context.Context, username, email, password string) (*domain.User, error)
 	Login(ctx context.Context, emailOrUsername, password string) (*domain.User, string, error)
 	UpdateProfile(ctx context.Context, userID uint64, username, email string) (*domain.User, error)
