@@ -18,7 +18,7 @@ import (
 // 	WithinTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 // }
 
-type NoteRepository interface {
+type noteRepository interface {
 	Create(ctx context.Context, note *domain.Note) error
 	Update(ctx context.Context, note *domain.Note) error
 	SoftDelete(ctx context.Context, id uint64) error
@@ -33,8 +33,8 @@ type NoteRepository interface {
 	CountByUserID(ctx context.Context, userID uint64) (int64, error)
 }
 
-type UserRepository interface {
-	Create(ctx context.Context, user *domain.User) error
+type userRepository interface {
+	Create(ctx context.Context, user *domain.User) (*domain.User, error)
 	Update(ctx context.Context, id uint64, user *domain.User) error
 	UpdatePassword(ctx context.Context, id uint64, hashedPassword string) error
 

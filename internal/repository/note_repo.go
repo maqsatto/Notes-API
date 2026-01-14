@@ -24,7 +24,7 @@ func (r *NoteRepo) Create(ctx context.Context, note *domain.Note) error {
 			  RETURNING id, created_at, updated_at`
 
 	if err := r.db.QueryRowContext(ctx, query, note.Title, note.Content, note.UserID, note.Tags).
-		Scan(&note.ID, note.CreatedAt, note.UpdatedAt); err != nil {
+		Scan(&note.ID, &note.CreatedAt, &note.UpdatedAt); err != nil {
 		return err
 	}
 	return nil
