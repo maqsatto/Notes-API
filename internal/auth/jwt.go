@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/maqsatto/Notes-API/internal/domain"
 )
 
 //Token create/verify
@@ -48,10 +49,10 @@ func (m *JWTManager) ParseAndValidate(tokenString string) (*Claims, error) {
 		&Claims{},
 		func(t *jwt.Token) (any, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, ErrInvalidToken
+				return nil, domain.ErrInvalidToken
 			}
 			if t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
-				return nil, ErrExpiredToken
+				return nil, domain.ErrExpiredToken
 			}
 			return m.secret, nil
 		},
@@ -60,23 +61,23 @@ func (m *JWTManager) ParseAndValidate(tokenString string) (*Claims, error) {
 	)
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
-			return nil, ErrExpiredToken
+			return nil, domain.ErrExpiredToken
 		}
-		return nil, ErrInvalidToken
+		return nil, domain.ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(*Claims)
 	if !ok || !token.Valid {
-		return nil, ErrInvalidToken
+		return nil, domain.ErrInvalidToken
 	}
 	if claims.ExpiresAt == nil || time.Now().After(claims.ExpiresAt.Time) {
-		return nil, ErrExpiredToken
+		return nil, domain.ErrExpiredToken
 	}
 	if claims.Issuer != m.issuer {
-		return nil, ErrInvalidToken
+		return nil, domain.ErrInvalidToken
 	}
 	if claims.UserID == 0 {
-		return nil, ErrInvalidToken
+		return nil, domain.ErrInvalidToken
 	}
 
 	return claims, nil
