@@ -45,7 +45,7 @@ func (r *NoteRepo) Update(ctx context.Context, note *domain.Note) error {
 
 func (r *NoteRepo) SoftDelete(ctx context.Context, id uint64) error {
 
-	query := `UPDATE notes SET deleted_at = now() 
+	query := `UPDATE notes SET deleted_at = now()
              WHERE id = $1 AND deleted_at IS NULL RETURNING deleted_at`
 
 	if _, err := r.db.ExecContext(ctx, query, id); err != nil {
@@ -65,7 +65,7 @@ func (r *NoteRepo) HardDelete(ctx context.Context, id uint64) error {
 
 func (r *NoteRepo) GetByID(ctx context.Context, id uint64) (*domain.Note, error) {
 
-	query := `SELECT id, user_id, title, content, created_at, updated_at, tags FROM notes 
+	query := `SELECT id, user_id, title, content, created_at, updated_at, tags FROM notes
                 WHERE id = $1 AND deleted_at IS NULL`
 
 	var note domain.Note
@@ -178,35 +178,51 @@ func (r *NoteRepo) ListByTags(ctx context.Context, userID uint64, tags []string,
 		return nil, 0, err
 	}
 
-	return nil, 0, nil
+	return notes, total, nil
 }
 
-func (r *NoteRepo) SearchByTitle(ctx context.Context, userID uint64, titleQuery string, limit, offset int) ([]*domain.Note, int64, error) {
+func (r *NoteRepo) SearchByTitle(
+	ctx context.Context,
+	userID uint64,
+	titleQuery string,
+	limit, offset int,
+) ([]*domain.Note, int64, error) {
 
-	dataQuery := `SELECT id, user_id, title, content, created_at, updated_at, tags FROM notes
-    		  WHERE user_id = $1 
-    		  AND deleted_at IS NULL 
-    		  AND title LIKE $2 LIMIT $3 OFFSET $4`
+	search := "%" + titleQuery + "%"
 
-	countQuery := `SELECT COUNT(*) FROM notes 
-                   WHERE user_id = $1 
-                   AND deleted_at IS NULL 
-                   AND title LIKE $2`
+	countQuery := `
+		SELECT COUNT(*)
+		FROM notes
+		WHERE user_id = $1
+		  AND deleted_at IS NULL
+		  AND title ILIKE $2
+	`
 
 	var total int64
-	if err := r.db.QueryRowContext(ctx, countQuery, userID, titleQuery).Scan(&total); err != nil {
+	if err := r.db.QueryRowContext(ctx, countQuery, userID, search).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
-	rows, err := r.db.QueryContext(ctx, dataQuery, userID, titleQuery, limit, offset)
+	dataQuery := `
+		SELECT id, user_id, title, content, created_at, updated_at, tags
+		FROM notes
+		WHERE user_id = $1
+		  AND deleted_at IS NULL
+		  AND title ILIKE $2
+		ORDER BY created_at DESC
+		LIMIT $3 OFFSET $4
+	`
+
+	rows, err := r.db.QueryContext(ctx, dataQuery, userID, search, limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer rows.Close()
+
 	notes := make([]*domain.Note, 0, limit)
 
 	for rows.Next() {
-		var note domain.Note
+		note := new(domain.Note)
 		if err := rows.Scan(
 			&note.ID,
 			&note.UserID,
@@ -214,10 +230,11 @@ func (r *NoteRepo) SearchByTitle(ctx context.Context, userID uint64, titleQuery 
 			&note.Content,
 			&note.CreatedAt,
 			&note.UpdatedAt,
-			&note.Tags); err != nil {
+			&note.Tags,
+		); err != nil {
 			return nil, 0, err
 		}
-		notes = append(notes, &note)
+		notes = append(notes, note)
 	}
 
 	if err := rows.Err(); err != nil {
