@@ -8,12 +8,6 @@ import (
 )
 
 //Token create/verify
-
-var (
-	ErrInvalidToken = errors.New("invalid token")
-	ErrExpiredToken = errors.New("token expired")
-)
-
 type JWTManager struct {
 	secret []byte
 	ttl time.Duration

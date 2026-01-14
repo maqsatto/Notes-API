@@ -2,23 +2,87 @@ package domain
 
 import "errors"
 
-// User related errors
+// Common / Base errors
+
 var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrUserAlreadyExists  = errors.New("user already exists")
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrInvalidUser        = errors.New("invalid user data")
+	ErrInvalidID        = errors.New("invalid id")
+	ErrInvalidInput     = errors.New("invalid input")
+	ErrUnauthorized     = errors.New("unauthorized")
+	ErrForbidden        = errors.New("forbidden")
+	ErrConflict         = errors.New("resource conflict")
+	ErrInternal         = errors.New("internal server error")
+	ErrNotImplemented   = errors.New("not implemented")
 )
 
-// Note related errors
+// User errors
+
 var (
-	ErrNoteNotFound = errors.New("note not found")
-	ErrInvalidNote  = errors.New("invalid note data")
-	ErrUnauthorized = errors.New("unauthorized access to note")
+	ErrUserNotFound          = errors.New("user not found")
+	ErrUserAlreadyExists    = errors.New("user already exists")
+	ErrEmailAlreadyExists   = errors.New("email already exists")
+	ErrUsernameAlreadyExists= errors.New("username already exists")
+
+	ErrInvalidUser           = errors.New("invalid user data")
+	ErrInvalidEmail          = errors.New("invalid email")
+	ErrInvalidUsername       = errors.New("invalid username")
+	ErrInvalidPassword       = errors.New("invalid password")
+
+	ErrInvalidCredentials    = errors.New("invalid credentials")
+	ErrPasswordMismatch     = errors.New("password mismatch")
+
+	ErrUserDeleted           = errors.New("user is deleted")
 )
 
-// Common errors
+// Note errors
+
 var (
-	ErrInvalidID = errors.New("invalid id")
-	ErrInternal  = errors.New("internal server error")
+	ErrNoteNotFound          = errors.New("note not found")
+	ErrInvalidNote           = errors.New("invalid note data")
+
+	ErrNoteTitleEmpty        = errors.New("note title is empty")
+	ErrNoteContentEmpty     = errors.New("note content is empty")
+	ErrNoteTooLarge          = errors.New("note content too large")
+
+	ErrNoteAccessDenied      = errors.New("access to note denied")
+	ErrNoteDeleted           = errors.New("note is deleted")
+
+	ErrInvalidTags           = errors.New("invalid tags")
+	ErrTooManyTags           = errors.New("too many tags")
+)
+
+// Repository / persistence errors
+
+var (
+	ErrAlreadyDeleted        = errors.New("already deleted")
+	ErrNothingToUpdate       = errors.New("nothing to update")
+
+	ErrDatabase              = errors.New("database error")
+	ErrTransaction           = errors.New("transaction error")
+)
+
+// Auth / JWT errors
+
+var (
+	ErrInvalidToken          = errors.New("invalid token")
+	ErrExpiredToken          = errors.New("token expired")
+	ErrMissingToken          = errors.New("missing token")
+	ErrMalformedToken        = errors.New("malformed token")
+
+	ErrInvalidIssuer         = errors.New("invalid token issuer")
+	ErrInvalidSigningMethod  = errors.New("invalid signing method")
+)
+
+// Pagination / filtering
+
+var (
+	ErrInvalidLimit          = errors.New("invalid limit")
+	ErrInvalidOffset         = errors.New("invalid offset")
+	ErrInvalidSearchQuery    = errors.New("invalid search query")
+)
+
+// Service-level errors
+
+var (
+	ErrOperationNotAllowed   = errors.New("operation not allowed")
+	ErrStateViolation        = errors.New("state violation")
 )
