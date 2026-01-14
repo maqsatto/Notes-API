@@ -3,6 +3,7 @@ package router
 import (
 	"net/http"
 
+	"github.com/maqsatto/Notes-API/internal/auth"
 	"github.com/maqsatto/Notes-API/internal/config"
 	"github.com/maqsatto/Notes-API/internal/http/middleware"
 	"github.com/maqsatto/Notes-API/internal/logger"
@@ -13,6 +14,7 @@ type Deps struct {
 	Config *config.Config
 	Logger *logger.Logger
 	DB     any
+	JWT    *auth.JWTManager
 }
 
 func New(d Deps) http.Handler {
@@ -29,8 +31,14 @@ func New(d Deps) http.Handler {
 	// // userSvc := service.NewService(userRepo)
 	// // userHandler := handler.NewHandler(userSvc)
 
-	// mux.HandleFunc("POST /api/users", userHandler.CreateUser)
+		//Protected routes
+	// authMW := middleware.AuthMiddleware(d.JWT)
 
+	// mux.Handle("GET /api/notes", authMW(http.HandlerFunc(userHandler.List)))
+
+
+
+	//lobal middleware chain
 	var h http.Handler = mux
 	h = middleware.Recovery(d.Logger)(h)
 	h = middleware.Logger(d.Logger)(h)
