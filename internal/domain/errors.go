@@ -34,6 +34,7 @@ var (
 	ErrPasswordMissingLowercase = errors.New("password must contain at least one lowercase letter")
 	ErrPasswordMissingDigit     = errors.New("password must contain at least one digit")
 	ErrPasswordMissingSpecial   = errors.New("password must contain at least one special character")
+	ErrPasswordSameAsOld 				= errors.New("password is same as old")
 
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrPasswordMismatch   = errors.New("password mismatch")
