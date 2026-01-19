@@ -22,8 +22,8 @@ type noteService interface {
 }
 
 type userService interface {
-	Register(ctx context.Context, username, email, password string) (*domain.User, error)
-	Login(ctx context.Context, emailOrUsername, password string) (*domain.User, string, error)
+	Register(ctx context.Context, username, email, password string) (*domain.User, string, error)
+	Login(ctx context.Context, email, password string) (*domain.User, string, error)
 	UpdateProfile(ctx context.Context, userID uint64, username, email string) (*domain.User, error)
 	ChangePassword(ctx context.Context, userID uint64, oldPassword, newPassword string) error
 
