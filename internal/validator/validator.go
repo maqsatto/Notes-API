@@ -185,3 +185,15 @@ func IsValidContent(content string) (bool, error) {
 	}
 	return true, nil
 }
+
+func ValidateUserUpdate(email, username string) error {
+	if _, err := IsValidEmail(email); err != nil {
+		return err
+	}
+	if username != "" {
+		if _, err := IsValidUsername(username); err != nil {
+			return err
+		}
+	}
+	return nil
+}
