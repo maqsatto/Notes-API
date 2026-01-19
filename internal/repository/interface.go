@@ -42,6 +42,7 @@ type userRepository interface {
 
 	HardDelete(ctx context.Context, id uint64) error
 	GetByID(ctx context.Context, id uint64) (*domain.User, error)
+	GetByIDAny(ctx context.Context, id uint64) (*domain.User, error)
 
 	GetByEmail(ctx context.Context, email string) (*domain.User, error)
 	GetByUsername(ctx context.Context, username string) (*domain.User, error)

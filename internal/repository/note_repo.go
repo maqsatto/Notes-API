@@ -30,6 +30,8 @@ func (r *NoteRepo) Create(ctx context.Context, note *domain.Note) error {
 	return nil
 }
 
+
+
 func (r *NoteRepo) Update(ctx context.Context, note *domain.Note) error {
 
 	query := `UPDATE notes SET title = $1, content = $2, tags = $3

@@ -106,10 +106,34 @@ func (r *UserRepo) GetByID(ctx context.Context, id uint64) (*domain.User, error)
 	if err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&getUser.ID, &getUser.Email, &getUser.Username, &getUser.Password, &getUser.CreatedAt, &getUser.UpdatedAt,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
 		return nil, err
 	}
 	return &getUser, nil
 }
+
+func (r *UserRepo) GetByIDAny(ctx context.Context, id uint64) (*domain.User, error) {
+	query := `
+		SELECT id, email, username, password, created_at, updated_at, deleted_at
+		FROM users
+		WHERE id = $1
+	`
+	var u domain.User
+
+	if err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&u.ID, &u.Email, &u.Username, &u.Password, &u.CreatedAt, &u.UpdatedAt, &u.DeletedAt,
+	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return &u, nil
+}
+
+
 
 func (r *UserRepo) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
@@ -160,29 +184,46 @@ func (r *UserRepo) ExistsByUsername(ctx context.Context, username string) (bool,
 }
 
 func (r *UserRepo) List(ctx context.Context, limit, offset int) ([]*domain.User, int64, error) {
-	query := `SELECT id, email, username, created_at, updated_at FROM users
-	WHERE deleted_at IS NULL LIMIT $1 OFFSET $2`
+	if limit <= 0 {
+		limit = 20
+	}
+	if offset < 0 {
+		offset = 0
+	}
+
+	query := `
+		SELECT id, email, username, created_at, updated_at
+		FROM users
+		WHERE deleted_at IS NULL
+		ORDER BY id
+		LIMIT $1 OFFSET $2
+	`
 	countQuery := `SELECT COUNT(*) FROM users WHERE deleted_at IS NULL`
+
 	var total int64
 	if err := r.db.QueryRowContext(ctx, countQuery).Scan(&total); err != nil {
 		return nil, 0, err
 	}
+
 	rows, err := r.db.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer rows.Close()
+
 	users := make([]*domain.User, 0, limit)
 	for rows.Next() {
-		var user domain.User
+		user := new(domain.User)
 		if err := rows.Scan(&user.ID, &user.Email, &user.Username, &user.CreatedAt, &user.UpdatedAt); err != nil {
 			return nil, 0, err
 		}
-		users = append(users, &user)
+		users = append(users, user)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, 0, err
 	}
+
 	return users, total, nil
 }
 
