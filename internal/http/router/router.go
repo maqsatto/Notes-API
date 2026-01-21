@@ -48,22 +48,22 @@ func New(d Deps) http.Handler {
 	authMW := middleware.AuthMiddleware(d.JWT)
 
 	// // // User profile management
-	// mux.Handle("GET /api/users/me", authMW(http.HandlerFunc(userHandler.GetProfile)))
-	// mux.Handle("PUT /api/users/me", authMW(http.HandlerFunc(userHandler.UpdateProfile)))
-	// mux.Handle("PUT /api/users/me/password", authMW(http.HandlerFunc(userHandler.ChangePassword)))
-	// mux.Handle("DELETE /api/users/me", authMW(http.HandlerFunc(userHandler.DeleteAccount)))
-	// mux.Handle("DELETE /api/users/me/permanent", authMW(http.HandlerFunc(userHandler.PermanentDeleteAccount)))
+	mux.Handle("GET /api/users/me", authMW(http.HandlerFunc(userHandler.GetProfile)))
+	mux.Handle("PUT /api/users/me", authMW(http.HandlerFunc(userHandler.UpdateProfile)))
+	mux.Handle("PUT /api/users/me/password", authMW(http.HandlerFunc(userHandler.ChangePassword)))
+	mux.Handle("DELETE /api/users/me", authMW(http.HandlerFunc(userHandler.DeleteAccount)))
+	mux.Handle("DELETE /api/users/me/permanent", authMW(http.HandlerFunc(userHandler.PermanentDeleteAccount)))
 
 	// User lookup by ID, email, username
 	mux.Handle("GET /api/users/{id}", authMW(http.HandlerFunc(userHandler.GetByID)))
 	mux.Handle("GET /api/users/email/{email}", authMW(http.HandlerFunc(userHandler.GetByEmail)))
 	mux.Handle("GET /api/users/username/{username}", authMW(http.HandlerFunc(userHandler.GetByUsername)))
 
-	// // List users with pagination
-	// mux.Handle("GET /api/users", authMW(http.HandlerFunc(userHandler.ListUsers)))
+	// List users with pagination
+	mux.Handle("GET /api/users", authMW(http.HandlerFunc(userHandler.ListUsers)))
 
-	// // User statistics
-	// mux.Handle("GET /api/users/stats/total", authMW(http.HandlerFunc(userHandler.GetTotalUserCount)))
+	// User statistics
+	mux.Handle("GET /api/users/stats/total", authMW(http.HandlerFunc(userHandler.GetTotalUserCount)))
 
 	// Global Middleware Chain
 	var h http.Handler = mux
