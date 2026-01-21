@@ -1,0 +1,8 @@
+[ERROR] 2026/01/15 09:39:05 logger.go:43: register failed: pq: duplicate key value violates unique constraint "uq_users_email_active"
+[ERROR] 2026/01/15 10:10:24 logger.go:43: failed to connect to database: error connecting to database: dial tcp 139.59.158.7:25060: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+[ERROR] 2026/01/19 11:28:19 logger.go:43: login failed: user already exists
+[ERROR] 2026/01/19 11:28:43 logger.go:43: login failed: user already exists
+[ERROR] 2026/01/19 11:31:20 logger.go:43: login failed: user already exists
+[ERROR] 2026/01/19 11:43:09 logger.go:43: login failed: password mismatch
+[ERROR] 2026/01/19 11:44:52 logger.go:43: login failed: user not found
+[ERROR] 2026/01/19 12:34:08 logger.go:43: failed to connect to database: error connecting to database: dial tcp: lookup db-postgresql-fra1-50306-do-user-29193935-0.f.db.ondigitalocean.com: getaddrinfow: This is usually a temporary error during hostname resolution and means that the local server did not receive a response from an authoritative server.
