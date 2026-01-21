@@ -7,6 +7,7 @@ import (
 	"github.com/maqsatto/Notes-API/internal/domain"
 	"github.com/maqsatto/Notes-API/internal/http/dto/request"
 	"github.com/maqsatto/Notes-API/internal/http/dto/response"
+	"github.com/maqsatto/Notes-API/internal/http/middleware"
 	"github.com/maqsatto/Notes-API/internal/service"
 	"github.com/maqsatto/Notes-API/internal/utils"
 )
@@ -89,6 +90,227 @@ func (u *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Token: token,
 	}
 	utils.WriteJSON(w, http.StatusOK, authRes)
+}
+
+func (u *UserHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.UserIDFromContext(r.Context())
+	if !ok {
+		errorRes := response.ErrorResponse{
+			Error:   "Unauthorized",
+			Code:    http.StatusUnauthorized,
+			Message: "User ID not found in context",
+		}
+		utils.WriteJSON(w, http.StatusUnauthorized, errorRes)
+		return
+	}
+
+	user, err := u.UserService.GetByID(r.Context(), userID)
+	if err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "User not found",
+			Code:    http.StatusNotFound,
+			Message: err.Error(),
+		}
+		utils.WriteJSON(w, http.StatusNotFound, errorRes)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, toUserResponse(user))
+}
+
+func (u *UserHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	var req request.UpdateProfileRequest
+
+	if err := utils.ReadJSON(r, &req); err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "Invalid input",
+			Code:    http.StatusBadRequest,
+			Message: "Failed to parse request body",
+		}
+		utils.WriteJSON(w, http.StatusBadRequest, errorRes)
+		return
+	}
+	userID, ok := middleware.UserIDFromContext(r.Context())
+	if !ok {
+		errorRes := response.ErrorResponse{
+			Error:   "Unauthorized",
+			Code:    http.StatusUnauthorized,
+			Message: "User ID not found in context",
+		}
+		utils.WriteJSON(w, http.StatusUnauthorized, errorRes)
+		return
+	}
+	user, err := u.UserService.UpdateProfile(r.Context(), userID, req.Username, req.Email)
+	if err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "Update failed",
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+		utils.WriteJSON(w, http.StatusInternalServerError, errorRes)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, toUserResponse(user))
+}
+
+func (u *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	var req request.ChangePasswordRequest
+	if err := utils.ReadJSON(r, &req); err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "Invalid input",
+			Code:    http.StatusBadRequest,
+			Message: "Failed to parse request body",
+		}
+		utils.WriteJSON(w, http.StatusBadRequest, errorRes)
+		return
+	}
+	userID, ok := middleware.UserIDFromContext(r.Context())
+	if !ok {
+		errorRes := response.ErrorResponse{
+			Error:   "Unauthorized",
+			Code:    http.StatusUnauthorized,
+			Message: "User ID not found in context",
+		}
+		utils.WriteJSON(w, http.StatusUnauthorized, errorRes)
+		return
+	}
+	if err := u.UserService.ChangePassword(r.Context(), userID, req.OldPassword, req.NewPassword); err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "Password change failed",
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		}
+		utils.WriteJSON(w, http.StatusBadRequest, errorRes)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, response.MessageResponse{
+		Message: "Password changed successfully",
+	})
+}
+
+func (u *UserHandler) DeleteAccount(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.UserIDFromContext(r.Context())
+	if !ok {
+		errorRes := response.ErrorResponse{
+			Error:   "Unauthorized",
+			Code:    http.StatusUnauthorized,
+			Message: "User ID not found in context",
+		}
+		utils.WriteJSON(w, http.StatusUnauthorized, errorRes)
+		return
+	}
+	if err := u.UserService.DeleteAccount(r.Context(), userID); err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "Delete failed",
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+		utils.WriteJSON(w, http.StatusInternalServerError, errorRes)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, response.MessageResponse{
+		Message: "Account deleted successfully",
+	})
+}
+
+func (u *UserHandler) PermanentDeleteAccount(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.UserIDFromContext(r.Context())
+	if !ok {
+		errorRes := response.ErrorResponse{
+			Error:   "Unauthorized",
+			Code:    http.StatusUnauthorized,
+			Message: "User ID not found in context",
+		}
+		utils.WriteJSON(w, http.StatusUnauthorized, errorRes)
+		return
+	}
+	if err := u.UserService.PermanentDeleteAccount(r.Context(), userID); err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "Permanent delete failed",
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+		utils.WriteJSON(w, http.StatusInternalServerError, errorRes)
+		return
+	}
+	utils.WriteJSON(w, http.StatusOK, response.MessageResponse{
+		Message: "Account permanently deleted",
+	})
+}
+
+func (u *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.URL.Query().Get("limit")
+	offsetStr := r.URL.Query().Get("offset")
+	var req request.ListUsersRequest
+	if limitStr != "" {
+		limit, err := strconv.Atoi(limitStr)
+		if err != nil {
+			errorRes := response.ErrorResponse{
+				Error:   "Invalid parameter",
+				Code:    http.StatusBadRequest,
+				Message: "Limit must be a valid number",
+			}
+			utils.WriteJSON(w, http.StatusBadRequest, errorRes)
+			return
+		}
+		req.Limit = limit
+	}
+	if offsetStr != "" {
+		offset, err := strconv.Atoi(offsetStr)
+		if err != nil {
+			errorRes := response.ErrorResponse{
+				Error:   "Invalid parameter",
+				Code:    http.StatusBadRequest,
+				Message: "Offset must be a valid number",
+			}
+			utils.WriteJSON(w, http.StatusBadRequest, errorRes)
+			return
+		}
+		req.Offset = offset
+	}
+
+	req.SetDefaults()
+
+	users, total, err := u.UserService.ListUsers(r.Context(), req.Limit, req.Offset)
+	if err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "Failed to retrieve users",
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+		utils.WriteJSON(w, http.StatusInternalServerError, errorRes)
+		return
+	}
+	userResponses := make([]*response.UserResponse, len(users))
+	for i, user := range users {
+		userResponses[i] = toUserResponse(user)
+	}
+	listResponse := response.UserListResponse{
+		Users:  userResponses,
+		Total:  total,
+		Limit:  req.Limit,
+		Offset: req.Offset,
+	}
+	listResponse.CalculateTotalPages()
+
+	utils.WriteJSON(w, http.StatusOK, listResponse)
+}
+
+func (u *UserHandler) GetTotalUserCount(w http.ResponseWriter, r *http.Request) {
+	total, err := u.UserService.GetTotalUserCount(r.Context())
+	if err != nil {
+		errorRes := response.ErrorResponse{
+			Error:   "Failed to get user count",
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		}
+		utils.WriteJSON(w, http.StatusInternalServerError, errorRes)
+		return
+	}
+	statsResponse := response.StatsResponse{
+		TotalUsers: total,
+	}
+	utils.WriteJSON(w, http.StatusOK, statsResponse)
 }
 
 func (u *UserHandler) CheckEmail(w http.ResponseWriter, r *http.Request) {
