@@ -40,3 +40,13 @@ type CheckEmailRequest struct {
 type CheckUsernameRequest struct {
 	Username string `json:"username"`
 }
+
+// SetDefaults sets default values for pagination
+func (r *ListUsersRequest) SetDefaults() {
+	if r.Limit == 0 {
+		r.Limit = 10
+	}
+	if r.Offset < 0 {
+		r.Offset = 0
+	}
+}

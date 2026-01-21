@@ -51,20 +51,9 @@ type StatsResponse struct {
 
 // Helper Methods
 
-
-// // CalculateTotalPages calculates the total number of pages
-// func (r *UserListResponse) CalculateTotalPages() {
-// 	if r.Limit > 0 {
-// 		r.TotalPages = int((r.Total + int64(r.Limit) - 1) / int64(r.Limit))
-// 	}
-// }
-
-// // SetDefaults sets default values for pagination
-// func (r *ListUsersRequest) SetDefaults() {
-// 	if r.Limit == 0 {
-// 		r.Limit = 10
-// 	}
-// 	if r.Offset < 0 {
-// 		r.Offset = 0
-// 	}
-// }
+// CalculateTotalPages calculates the total number of pages
+func (r *UserListResponse) CalculateTotalPages() {
+	if r.Limit > 0 {
+		r.TotalPages = int((r.Total + int64(r.Limit) - 1) / int64(r.Limit))
+	}
+}
